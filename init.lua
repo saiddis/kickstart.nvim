@@ -83,10 +83,18 @@ I hope you enjoy your Neovim journey,
 
 P.S. You can delete this when you're done too. It's your config now! :)
 --]]
-
 -- Set <space> as the leader key
 -- See `:help mapleader`
 --  NOTE: Must happen before plugins are loaded (otherwise wrong leader will be used)
+--
+--
+--
+vim.keymap.set('n', '<C-d>', '<C-d>zz')
+vim.keymap.set('n', '<C-u>', '<C-u>zz')
+vim.keymap.set('n', 'n', 'nzzzv')
+vim.keymap.set('n', 'N', 'Nzzzv')
+vim.keymap.set('n', '<leader>p', '"_dP')
+
 vim.g.mapleader = ' '
 vim.g.maplocalleader = ' '
 
@@ -97,6 +105,10 @@ vim.g.have_nerd_font = true
 -- See `:help vim.opt`
 -- NOTE: You can change these options as you wish!
 --  For more options, you can see `:help option-list`
+
+-- vim.opt.fillchars = { horiz = '━', horizup = '┻', horizdown = '┳', vert = '┃', vertleft = '┫', vertright = '┣', verthoriz = '╋' }
+
+-- vim.opt.fillchars = { vert = ' ' }
 
 -- Make line numbers default
 vim.opt.number = true
@@ -146,7 +158,8 @@ vim.opt.splitbelow = true
 --  See `:help 'list'`
 --  and `:help 'listchars'`
 vim.opt.list = true
-vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+--vim.opt.listchars = { tab = '» ', trail = '·', nbsp = '␣' }
+vim.opt.listchars = { tab = '  ', trail = '·', nbsp = '␣' }
 
 -- Preview substitutions live, as you type!
 vim.opt.inccommand = 'split'
@@ -243,19 +256,6 @@ require('lazy').setup({
   --    require('gitsigns').setup({ ... })
   --
   -- See `:help gitsigns` to understand what the configuration keys do
-  { -- Adds git related signs to the gutter, as well as utilities for managing changes
-    'lewis6991/gitsigns.nvim',
-    opts = {
-      signs = {
-        add = { text = '+' },
-        change = { text = '~' },
-        delete = { text = '_' },
-        topdelete = { text = '‾' },
-        changedelete = { text = '~' },
-      },
-    },
-  },
-
   -- NOTE: Plugins can also be configured to run Lua code when they are loaded.
   --
   -- This is often very useful to both group configuration, as well as handle
@@ -270,25 +270,6 @@ require('lazy').setup({
   -- Then, because we use the `config` key, the configuration only runs
   -- after the plugin has been loaded:
   --  config = function() ... end
-
-  { -- Useful plugin to show you pending keybinds.
-    'folke/which-key.nvim',
-    event = 'VimEnter', -- Sets the loading event to 'VimEnter'
-    config = function() -- This is the function that runs, AFTER loading
-      require('which-key').setup()
-
-      -- Document existing key chains
-      require('which-key').add {
-        { '<leader>c', group = '[C]ode' },
-        { '<leader>d', group = '[D]ocument' },
-        { '<leader>r', group = '[R]ename' },
-        { '<leader>s', group = '[S]earch' },
-        { '<leader>w', group = '[W]orkspace' },
-        { '<leader>t', group = '[T]oggle' },
-        { '<leader>h', group = 'Git [H]unk', mode = { 'n', 'v' } },
-      }
-    end,
-  },
 
   -- NOTE: Plugins can specify dependencies.
   --
@@ -366,21 +347,57 @@ require('lazy').setup({
 
       -- See `:help telescope.builtin`
       local builtin = require 'telescope.builtin'
+
       vim.keymap.set('n', '<leader>sh', builtin.help_tags, { desc = '[S]earch [H]elp' })
       vim.keymap.set('n', '<leader>sk', builtin.keymaps, { desc = '[S]earch [K]eymaps' })
-      vim.keymap.set('n', '<leader>sf', builtin.find_files, { desc = '[S]earch [F]iles' })
+
+      vim.keymap.set('n', '<leader>sf', function()
+        builtin.find_files(require('telescope.themes').get_dropdown {
+          results_height = 20,
+          winblend = 10,
+          width = 0.8,
+          prompt_title = '',
+          prompt_prefix = '',
+          previewer = false,
+          borderchars = {
+            { '─', '│', '─', '│', '┌', '┐', '┘', '└' },
+            prompt = { '─', '│', ' ', '│', '┌', '┐', '│', '│' },
+            results = { '─', '│', '─', '│', '├', '┤', '┘', '└' },
+            preview = { '─', '│', '─', '│', '┌', '┐', '┘', '└' },
+          },
+        })
+      end, { desc = '[S]earch [F]iles' })
+
       vim.keymap.set('n', '<leader>ss', builtin.builtin, { desc = '[S]earch [S]elect Telescope' })
       vim.keymap.set('n', '<leader>sw', builtin.grep_string, { desc = '[S]earch current [W]ord' })
-      vim.keymap.set('n', '<leader>sg', builtin.live_grep, { desc = '[S]earch by [G]rep' })
+      vim.keymap.set('n', '<leader>sg', function()
+        builtin.live_grep(require('telescope.themes').get_dropdown {
+          winblend = 10,
+          width = 0.8,
+          show_line = true,
+          prompt_prefix = '',
+          prompt_title = '',
+          results_title = '',
+          preview_title = '',
+          previewer = true,
+          borderchars = {
+            { '─', '│', '─', '│', '┌', '┐', '┘', '└' },
+            prompt = { '─', '│', ' ', '│', '┌', '┐', '│', '│' },
+            results = { '─', '│', '─', '│', '├', '┤', '┘', '└' },
+            preview = { '─', '│', '─', '│', '┌', '┐', '┘', '└' },
+          },
+        })
+      end, { desc = '[S]earch by [G]rep' })
       vim.keymap.set('n', '<leader>sd', builtin.diagnostics, { desc = '[S]earch [D]iagnostics' })
       vim.keymap.set('n', '<leader>sr', builtin.resume, { desc = '[S]earch [R]esume' })
       vim.keymap.set('n', '<leader>s.', builtin.oldfiles, { desc = '[S]earch Recent Files ("." for repeat)' })
-      vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
+      -- vim.keymap.set('n', '<leader><leader>', builtin.buffers, { desc = '[ ] Find existing buffers' })
 
       -- Slightly advanced example of overriding default behavior and theme
       vim.keymap.set('n', '<leader>/', function()
         -- You can pass additional configuration to Telescope to change the theme, layout, etc.
         builtin.current_buffer_fuzzy_find(require('telescope.themes').get_dropdown {
+          prompt_title = '',
           winblend = 10,
           previewer = false,
         })
@@ -579,7 +596,7 @@ require('lazy').setup({
         --    https://github.com/pmizio/typescript-tools.nvim
         --
         -- But for many setups, the LSP (`tsserver`) will work just fine
-        tsserver = {},
+        ts_ls = {},
         --
 
         lua_ls = {
@@ -708,7 +725,14 @@ require('lazy').setup({
       local luasnip = require 'luasnip'
       luasnip.config.setup {}
 
+      -- local winhighlight = {
+      --   winhighlight = 'Normal:NormalFloat,FloatBorder:FloatBorder,CursorLine:PmenuSel',
+      -- }
       cmp.setup {
+        -- window = {
+        --   completion = cmp.config.window.bordered(winhighlight),
+        --   documentation = cmp.config.window.bordered(winhighlight),
+        -- },
         snippet = {
           expand = function(args)
             luasnip.lsp_expand(args.body)
@@ -782,53 +806,6 @@ require('lazy').setup({
     end,
   },
 
-  --  { -- You can easily change to a different colorscheme.
-  --    -- Change the name of the colorscheme plugin below, and then
-  --    -- change the command in the config to whatever the name of that colorscheme is.
-  --    --
-  --    -- If you want to see what colorschemes are already installed, you can use `:Telescope colorscheme`.
-  --    --'folke/tokyonight.nvim',
-  --    --'Yazeed1s/oh-lucy.nvim',
-  --    'rebelot/kanagawa.nvim',
-  --    priority = 1000, -- Make sure to load this before all the other start plugins.
-  --    init = function()
-  --      -- Default options:
-  --      require('kanagawa').setup {
-  --        compile = false, -- enable compiling the colorscheme
-  --        undercurl = true, -- enable undercurls
-  --        commentStyle = { italic = true },
-  --        functionStyle = {},
-  --        keywordStyle = { italic = true },
-  --        statementStyle = { bold = true },
-  --        typeStyle = {},
-  --        transparent = false, -- do not set background color
-  --        dimInactive = false, -- dim inactive window `:h hl-NormalNC`
-  --        terminalColors = true, -- define vim.g.terminal_color_{0,17}
-  --        colors = { -- add/modify theme and palette colors
-  --          palette = {},
-  --          theme = { wave = {}, lotus = {}, dragon = {}, all = {} },
-  --        },
-  --        overrides = function(colors) -- add/modify highlights
-  --          return {}
-  --        end,
-  --        theme = 'dragon', -- Load "wave" theme when 'background' option is not set
-  --        background = { -- map the value of 'background' option to a theme
-  --          dark = 'dragon', -- try "dragon" !
-  --          light = 'lotus',
-  --        },
-  --      }
-  --
-  --      -- setup must be called before loading
-  --      -- Load the colorscheme here.
-  --      -- Like many other themes, this one has different styles, and you could load
-  --      -- any other, such as 'tokyonight-storm', 'tokyonight-moon', or 'tokyonight-day'.
-  --      vim.cmd.colorscheme 'kanagawa'
-  --
-  --      -- You can configure highlights by doing something like:
-  --      vim.cmd.hi 'Comment gui=none'
-  --    end,
-  --  },
-
   -- Highlight todo, notes, etc in comments
   { 'folke/todo-comments.nvim', event = 'VimEnter', dependencies = { 'nvim-lua/plenary.nvim' }, opts = { signs = false } },
 
@@ -853,17 +830,16 @@ require('lazy').setup({
       -- Simple and easy statusline.
       --  You could remove this setup call if you don't like it,
       --  and try some other statusline plugin
-      local statusline = require 'mini.statusline'
+      --local statusline = require 'mini.statusline'
       -- set use_icons to true if you have a Nerd Font
-      statusline.setup { use_icons = vim.g.have_nerd_font }
+      --statusline.setup { use_icons = vim.g.have_nerd_font }
 
       -- You can configure sections in the statusline by overriding their
       -- default behavior. For example, here we set the section for
       -- cursor location to LINE:COLUMN
-      ---@diagnostic disable-next-line: duplicate-set-field
-      statusline.section_location = function()
-        return '%2l:%-2v'
-      end
+      --statusline.section_location = function()
+      --  return '%2l:%-2v'
+      --end
 
       -- ... and there is more!
       --  Check out: https://github.com/echasnovski/mini.nvim
@@ -909,15 +885,26 @@ require('lazy').setup({
   --  Here are some example plugins that I've included in the Kickstart repository.
   --  Uncomment any of the lines below to enable them (you will need to restart nvim).
   --
-  -- require 'kickstart.plugins.debug',
-  require 'kickstart.plugins.kanagawa',
-  require 'kickstart.plugins.indent_line',
+  require 'kickstart.plugins.moonfly',
+  -- require 'kickstart.plugins.citruszest',
+  -- require 'kickstart.plugins.catppuccin',
+  -- require 'kickstart.plugins.falcon',
+  -- require 'kickstart.plugins.gotham',
+  -- require 'kickstart.plugins.colorbuddy',
+  -- require 'kickstart.plugins.modus',
+  -- require 'kickstart.plugins.flow',
   require 'kickstart.plugins.lint',
   require 'kickstart.plugins.autopairs',
-  require 'kickstart.plugins.neo-tree',
   require 'kickstart.plugins.gitsigns', -- adds gitsigns recommend keymaps
-  require 'kickstart.plugins.lualine',
   require 'kickstart.plugins.harpoon',
+  require 'kickstart.plugins.oil',
+  require 'kickstart.plugins.vim-be-good',
+  require 'kickstart.plugins.lazy-git',
+  require 'kickstart.plugins.vim-go',
+  require 'kickstart.plugins.which-key',
+  require 'kickstart.plugins.indent_line',
+  -- require 'kickstart.plugins.snacks',
+  -- require 'kickstart.plugins.neoscroll',
 
   -- NOTE: The import below can automatically add your own plugins, configuration, etc from `lua/custom/plugins/*.lua`
   --    This is the easiest way to modularize your config.
@@ -946,6 +933,7 @@ require('lazy').setup({
     },
   },
 })
-
+vim.opt.laststatus = 0 -- Or 3 for global statusline
+-- vim.opt.statusline = ' %f %m %= %l:%c ♥ '
 -- The line beneath this is called `modeline`. See `:help modeline`
 -- vim: ts=2 sts=2 sw=2 et
